@@ -1,136 +1,43 @@
 package com.pragma.pocapp.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
-//@Data
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name ="clients")
 public class Client {
 
     @Id
-    @Column(name = "IdKey", nullable = false)
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "FirstName", nullable = false)
+    @Column(name = "firstName", nullable = false)
     private String firstName;
 
-    @Column(name = "LastName", nullable = false)
+    @Column(name = "lastName", nullable = false)
     private String lastName;
 
-    @Column(name = "IdType", nullable = false)
+    @Column(name = "idType", nullable = false)
     private String idType;
 
-    @Column(name = "IdNumber", nullable = false)
+    @Column(name = "idNumber", nullable = false)
     private Long idNumber;
 
-    @Column(name = "Age", nullable = false)
+    @Column(name = "age", nullable = false)
     private Integer age;
 
-    @Column(name = "CityOfBirth")
+    @Column(name = "cityOfBirth")
     private String cityOfBirth;
 
-    public Client() {
-    }
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "ImageId")
+//    private ClientImage clientImage;
 
-    public Client(String firstName, String lastName,
-                  String idType, Long idNumber, Integer age, String cityOfBirth) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.idType = idType;
-        this.idNumber = idNumber;
-        this.age = age;
-        this.cityOfBirth = cityOfBirth;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getIdType() {
-        return idType;
-    }
-
-    public void setIdType(String idType) {
-        this.idType = idType;
-    }
-
-    public Long getIdNumber() {
-        return idNumber;
-    }
-
-    public void setIdNumber(Long idNumber) {
-        this.idNumber = idNumber;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getCityOfBirth() {
-        return cityOfBirth;
-    }
-
-    public void setCityOfBirth(String cityOfBirth) {
-        this.cityOfBirth = cityOfBirth;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
-
-        Client client = (Client) object;
-
-        if (!id.equals(client.id)) return false;
-        if (!firstName.equals(client.firstName)) return false;
-        if (!idType.equals(client.idType)) return false;
-        return idNumber.equals(client.idNumber);
-    }
-
-    @Override
-    public int hashCode() {
-        int fixedHasCode = id.hashCode();
-        fixedHasCode = 31 * fixedHasCode + firstName.hashCode();
-        fixedHasCode = 31 * fixedHasCode + idType.hashCode();
-        fixedHasCode = 31 * fixedHasCode + idNumber.hashCode();
-        return fixedHasCode;
-    }
-
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", idType='" + idType + '\'' +
-                ", idNumber=" + idNumber +
-                ", age=" + age +
-                ", cityOfBirth='" + cityOfBirth + '\'' +
-                '}';
-    }
 }

@@ -1,5 +1,6 @@
 package com.pragma.pocapp.configuration;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -22,6 +23,11 @@ public class Configuration {
                         .allowedHeaders("*");
             }
         };
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 
 
