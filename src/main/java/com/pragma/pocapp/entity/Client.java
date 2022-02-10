@@ -1,9 +1,10 @@
-package com.pragma.pocapp.model;
+package com.pragma.pocapp.entity;
 
 import javax.persistence.*;
 
+//@Data
 @Entity
-@Table
+@Table(name ="clients")
 public class Client {
 
     @Id
@@ -32,9 +33,8 @@ public class Client {
     public Client() {
     }
 
-    public Client(Long id, String firstName, String lastName,
+    public Client(String firstName, String lastName,
                   String idType, Long idNumber, Integer age, String cityOfBirth) {
-        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.idType = idType;
@@ -100,11 +100,11 @@ public class Client {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
 
-        Client client = (Client) o;
+        Client client = (Client) object;
 
         if (!id.equals(client.id)) return false;
         if (!firstName.equals(client.firstName)) return false;
@@ -114,11 +114,11 @@ public class Client {
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + firstName.hashCode();
-        result = 31 * result + idType.hashCode();
-        result = 31 * result + idNumber.hashCode();
-        return result;
+        int fixedHasCode = id.hashCode();
+        fixedHasCode = 31 * fixedHasCode + firstName.hashCode();
+        fixedHasCode = 31 * fixedHasCode + idType.hashCode();
+        fixedHasCode = 31 * fixedHasCode + idNumber.hashCode();
+        return fixedHasCode;
     }
 
     @Override
