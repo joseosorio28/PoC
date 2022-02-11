@@ -33,7 +33,6 @@ public class ClientService {
         if (registeredClient.isPresent()) {
             throw new IllegalStateException("Client already in DB");
         }
-
         clientRepository.save(client);
     }
 

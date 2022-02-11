@@ -26,7 +26,7 @@ public class Image {
 
     @OneToOne//(mappedBy = "image")//(fetch = FetchType.LAZY,  cascade = CascadeType.ALL, mappedBy = "image")
     //@MapsId
-    @JoinColumn(name = "client_id")
+    @JoinColumn(name = "client_id", nullable = false, unique = true)
     //@JoinColumn(name = "clientId", referencedColumnName = "clientId", nullable = false, unique = true)
     private Client  client;
 
