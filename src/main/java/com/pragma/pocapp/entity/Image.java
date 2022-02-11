@@ -11,14 +11,17 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name ="images")
-public class ClientImage {
+public class Image {
 
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private Long id;
 
-    @Column(name = "imageBase64")
-    private String imageBase64;
+    @Column(name = "imageB64")
+    private String imageB64;
+
+    @Column(name = "clientId", nullable = false)
+    private Long clientId;
 
 }

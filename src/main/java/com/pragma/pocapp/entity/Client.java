@@ -15,7 +15,7 @@ public class Client {
 
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private Long id;
 
     @Column(name = "firstName", nullable = false)
@@ -35,9 +35,5 @@ public class Client {
 
     @Column(name = "cityOfBirth")
     private String cityOfBirth;
-
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "ImageId")
-//    private ClientImage clientImage;
 
 }
