@@ -33,6 +33,7 @@ public class ClientService {
         if (registeredClient.isPresent()) {
             throw new IllegalStateException("Client already in DB");
         }
+
         clientRepository.save(client);
     }
 
@@ -43,6 +44,6 @@ public class ClientService {
 
     public void deleteClient(String idType, Long idNumber) {
         Optional<Client> registeredClient = clientRepository.findByIdTypeAndIdNumber(idType,idNumber);
-        registeredClient.ifPresent(client -> clientRepository.deleteById(client.getId()));
+        registeredClient.ifPresent(client -> clientRepository.deleteById(client.getClientId()));
     }
 }

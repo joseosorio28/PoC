@@ -33,11 +33,11 @@ public class ImageController {
         return new ResponseEntity<>(image, HttpStatus.FOUND);
     }
 
-    @PostMapping
-    public ResponseEntity<Image> registerImage(@Valid @RequestBody Image image) {
-        imageService.addImage(image);
-        return new ResponseEntity<>(image,HttpStatus.CREATED);
-    }
+//    @PostMapping
+//    public ResponseEntity<Image> registerImage(@Valid @RequestBody Image image) {
+//        imageService.addImage(image);
+//        return new ResponseEntity<>(image,HttpStatus.CREATED);
+//    }
 
     @PutMapping
     public ResponseEntity<Image> updateImage(@Valid @RequestBody Image image) {
@@ -45,12 +45,12 @@ public class ImageController {
         return new ResponseEntity<>(image,HttpStatus.CREATED);
     }
 
-    @DeleteMapping("image")
-    public ResponseEntity<String> deleteImage(
-            @RequestParam(name = "clientId") Long clientId){
-        imageService.deleteImage(clientId);
-        return new ResponseEntity<>("User image deleted",HttpStatus.ACCEPTED);
-    }
+//    @DeleteMapping("image")
+//    public ResponseEntity<String> deleteImage(
+//            @RequestParam(name = "clientId") Long clientId){
+//        imageService.deleteImage(clientId);
+//        return new ResponseEntity<>("User image deleted",HttpStatus.ACCEPTED);
+//    }
 
 
 }

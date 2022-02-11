@@ -27,21 +27,21 @@ public class ImageService {
                 .orElseThrow(()->new IllegalStateException("Client image not present in DB"));
     }
 
-    public void addImage(Image image) {
-        Optional<Image> imageByClientId = imageRepository.findByClientId(image.getClientId());
-
-        if (imageByClientId.isPresent()) {
-            throw new IllegalStateException("Client image already in DB");
-        }
-        imageRepository.save(image);
-    }
+//    public void addImage(Image image) {
+//        Optional<Image> imageByClientId = imageRepository.findByClientId(image.getClientId());
+//
+//        if (imageByClientId.isPresent()) {
+//            throw new IllegalStateException("Client image already in DB");
+//        }
+//        imageRepository.save(image);
+//    }
 
     public void updateImage(Image image) {
         imageRepository.save(image);
     }
 
-    public void deleteImage(Long clientId) {
-        Optional<Image> imageByClientId = imageRepository.findByClientId(clientId);
-        imageByClientId.ifPresent(image -> imageRepository.deleteByClientId(image.getClientId()));
-    }
+//    public void deleteImage(Long clientId) {
+//        Optional<Image> imageByClientId = imageRepository.findByClientId(clientId);
+//        imageByClientId.ifPresent(image -> imageRepository.deleteByClientId(image.getClientId()));
+//    }
 }

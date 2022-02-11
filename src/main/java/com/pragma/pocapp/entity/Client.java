@@ -1,5 +1,6 @@
 package com.pragma.pocapp.entity;
 
+import com.pragma.pocapp.dto.ClientImageDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,9 @@ import javax.persistence.*;
 public class Client {
 
     @Id
-    @Column(name = "id", nullable = false)
+    @Column(name = "clientId", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
-    private Long id;
+    private Long clientId;
 
     @Column(name = "firstName", nullable = false)
     private String firstName;
@@ -35,5 +36,9 @@ public class Client {
 
     @Column(name = "cityOfBirth")
     private String cityOfBirth;
+
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, mappedBy = "client")
+    //@PrimaryKeyJoinColumn
+    private Image image;
 
 }

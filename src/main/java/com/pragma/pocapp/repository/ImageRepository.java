@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
-    Optional<Image> findByClientId(Long clientId);
-    void deleteByClientId(Long clientId);
+//    Optional<Image> findByClientId(Long clientId);
+//    void deleteByClientId(Long clientId);
 }

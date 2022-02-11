@@ -21,7 +21,13 @@ public class Image {
     @Column(name = "imageB64")
     private String imageB64;
 
-    @Column(name = "clientId", nullable = false)
-    private Long clientId;
+//    @Column(name = "clientId", nullable = false)
+//    private Long clientId;
+
+    @OneToOne//(mappedBy = "image")//(fetch = FetchType.LAZY,  cascade = CascadeType.ALL, mappedBy = "image")
+    //@MapsId
+    @JoinColumn(name = "client_id")
+    //@JoinColumn(name = "clientId", referencedColumnName = "clientId", nullable = false, unique = true)
+    private Client  client;
 
 }
