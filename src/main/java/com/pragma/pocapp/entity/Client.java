@@ -1,15 +1,14 @@
 package com.pragma.pocapp.entity;
 
-import com.pragma.pocapp.dto.ClientImageDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name ="clients")
 public class Client {
@@ -19,26 +18,62 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private Long clientId;
 
+    @NonNull
+    @ToString.Include
     @Column(name = "firstName", nullable = false)
     private String firstName;
 
+    @NonNull
+    @ToString.Include
     @Column(name = "lastName", nullable = false)
     private String lastName;
 
+    @NonNull
+    @ToString.Include
     @Column(name = "idType", nullable = false)
     private String idType;
 
+    @NonNull
+    @ToString.Include
     @Column(name = "idNumber", nullable = false)
     private Long idNumber;
 
+    @NonNull
+    @ToString.Include
     @Column(name = "age", nullable = false)
     private Integer age;
 
-    @Column(name = "cityOfBirth")
+    @NonNull
+    @ToString.Include
+    @Column(name = "cityOfBirth", nullable = false)
     private String cityOfBirth;
 
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, mappedBy = "client")
-    //@PrimaryKeyJoinColumn
+    @OneToOne(
+            cascade = CascadeType.ALL,fetch = FetchType.LAZY,
+            orphanRemoval = true)//,
+            //mappedBy = "client")//, optional = false, orphanRemoval = true)
+    @JoinColumn(name="id")
     private Image image;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Client client = (Client) o;
+
+        if (!idType.equals(client.idType)) return false;
+        return idNumber.equals(client.idNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = firstName.hashCode();
+        result = 31 * result + lastName.hashCode();
+        result = 31 * result + idType.hashCode();
+        result = 31 * result + idNumber.hashCode();
+        result = 31 * result + age.hashCode();
+        result = 31 * result + cityOfBirth.hashCode();
+        return result;
+    }
 }
