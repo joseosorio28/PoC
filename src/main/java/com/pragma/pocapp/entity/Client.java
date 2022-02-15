@@ -10,7 +10,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name ="clients")
+@Table(name = "clients")
 public class Client {
 
     @Id
@@ -49,10 +49,10 @@ public class Client {
     private String cityOfBirth;
 
     @OneToOne(
-            cascade = CascadeType.ALL,fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, fetch = FetchType.LAZY,
             orphanRemoval = true)//,
-            //mappedBy = "client")//, optional = false, orphanRemoval = true)
-    @JoinColumn(name="id")
+    //mappedBy = "client")//, optional = false, orphanRemoval = true)
+    @JoinColumn(name = "id")
     private Image image;
 
     @Override

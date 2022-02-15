@@ -2,7 +2,6 @@ package com.pragma.pocapp.controller;
 
 
 import com.pragma.pocapp.dto.ClientImageDto;
-import com.pragma.pocapp.mapper.ClientMapper;
 import com.pragma.pocapp.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,44 +16,40 @@ import java.util.List;
 public class ClientController {
 
     private final ClientService clientService;
-    private final ClientMapper clientMapper;
 
     @Autowired
-    public ClientController(ClientService clientService, ClientMapper clientMapper) {
+    public ClientController(ClientService clientService) {
         this.clientService = clientService;
-        this.clientMapper = clientMapper;
-    }
 
-    @PostMapping
-    public ResponseEntity<ClientImageDto> registerClient(@Valid @RequestBody ClientImageDto clientImageDto) {
-        clientService.addClient(clientMapper.toEntity(clientImageDto));
-        return new ResponseEntity<>(clientImageDto,HttpStatus.CREATED);
     }
 
     @GetMapping("/clients")
-    public ResponseEntity<List<ClientImageDto>> listAllClients(){
-        return new ResponseEntity<>(clientMapper.toDtos(clientService.getClients()),HttpStatus.FOUND);
+    public ResponseEntity<List<ClientImageDto>> listAllClients() {
+        return new ResponseEntity<>(clientService.getClients(), HttpStatus.FOUND);
     }
 
     @GetMapping("client")
     public ResponseEntity<ClientImageDto> getClient(
             @RequestParam(name = "idType") String idType,
-            @RequestParam(name = "idNumber") Long idNumber){
-        ClientImageDto clientToGet = clientMapper.toDto(clientService.searchClient(idType,idNumber));
-        return new ResponseEntity<>(clientToGet,HttpStatus.FOUND);
+            @RequestParam(name = "idNumber") Long idNumber) {
+        return new ResponseEntity<>(clientService.searchClient(idType, idNumber), HttpStatus.FOUND);
+    }
+
+    @PostMapping
+    public ResponseEntity<ClientImageDto> registerClient(@Valid @RequestBody ClientImageDto clientImageDto) {
+        clientService.addClient(clientImageDto);
+        return new ResponseEntity<>(clientImageDto, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<ClientImageDto> updateClient(@Valid @RequestBody ClientImageDto clientImageDto) {
-        ClientImageDto updateClient = clientMapper.toDto(
-                clientService.updateClient(clientMapper.toEntity(clientImageDto)));
-        return new ResponseEntity<>(updateClient,HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(clientService.updateClient(clientImageDto), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("client")
     public ResponseEntity<String> deleteClient(@RequestParam String idType, @RequestParam Long idNumber) {
-        clientService.deleteClient(idType,idNumber);
-        return new ResponseEntity<>("User deleted",HttpStatus.ACCEPTED);
+        clientService.deleteClient(idType, idNumber);
+        return new ResponseEntity<>("User deleted", HttpStatus.ACCEPTED);
     }
 
 }
