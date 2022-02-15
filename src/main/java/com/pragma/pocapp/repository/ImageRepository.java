@@ -1,14 +1,18 @@
 package com.pragma.pocapp.repository;
 
 import com.pragma.pocapp.entity.Image;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ImageRepository extends JpaRepository<Image, Long> {
+public interface ImageRepository extends MongoRepository<Image, String> {
 
-//    Optional<Image> findByClientId(Long clientId);
-//    void deleteByClientId(Long clientId);
+    Optional<Image> findImageByIdTypeAndIdNumber(String idType, Long idNumber);
+
+    List<Image> findAll();
+
+    void deleteImageByIdTypeAndIdNumber(String idType, Long idNumber);
 }

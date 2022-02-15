@@ -19,9 +19,6 @@ public interface ClientMapper {
     @Mapping(target = "idType", source = "idType")
     @Mapping(target = "idNumber", source = "idNumber")
     @Mapping(target = "age", source = "age")
-    @Mapping(target = "image.imageB64", source = "imageB64")
-    @Mapping(target = "image.idType", source = "idType")
-    @Mapping(target = "image.idNumber", source = "idNumber")
     Client toEntity(ClientImageDto dto);
 
 
@@ -31,7 +28,6 @@ public interface ClientMapper {
     @Mapping(target = "idType", source = "idType")
     @Mapping(target = "idNumber", source = "idNumber")
     @Mapping(target = "age", source = "age")
-    @Mapping(target = "imageB64", source = "image.imageB64")
     ClientImageDto toDto(Client entity);
 
     List<ClientImageDto> toDtos(List<Client> entities);

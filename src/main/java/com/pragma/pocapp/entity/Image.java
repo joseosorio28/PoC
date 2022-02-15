@@ -1,6 +1,7 @@
 package com.pragma.pocapp.entity;
 
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.*;
 
@@ -9,14 +10,12 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
-@Entity
-@Table(name ="images")
+@Document(collection = "images")
 public class Image {
 
     @Id
-    @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
 
     @NonNull
     @ToString.Include
@@ -32,12 +31,6 @@ public class Image {
     @ToString.Include
     @Column(name = "idNumber", nullable = false)
     private Long idNumber;
-
-    @OneToOne(mappedBy = "image", fetch = FetchType.LAZY)//(mappedBy = "image")//(fetch = FetchType.LAZY,  cascade = CascadeType.ALL, mappedBy = "image")
-    //@MapsId
-    //@JoinColumn(name = "client_id")
-    //@JoinColumn(name = "clientId", referencedColumnName = "clientId", nullable = false, unique = true)
-    private Client  client;
 
     @Override
     public boolean equals(Object o) {

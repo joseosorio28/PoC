@@ -57,7 +57,6 @@ public class ClientService {
                 clientRepository
                         .findByIdTypeAndIdNumber(client.getIdType(), client.getIdNumber())
                         .map(presentClient -> {
-                            presentClient.getImage().setImageB64(client.getImage().getImageB64());
                             presentClient.setFirstName(client.getFirstName());
                             presentClient.setLastName(client.getLastName());
                             presentClient.setIdType(client.getIdType());

@@ -1,12 +1,13 @@
-package com.pragma.pocapp.configuration;
+package com.pragma.pocapp.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@org.springframework.context.annotation.Configuration
-public class Configuration {
+@Configuration
+public class AppConfig {
 
     @Value("${allowed.origin}")
     private String allowedOrigin;

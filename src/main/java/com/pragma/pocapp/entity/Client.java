@@ -48,13 +48,6 @@ public class Client {
     @Column(name = "cityOfBirth", nullable = false)
     private String cityOfBirth;
 
-    @OneToOne(
-            cascade = CascadeType.ALL, fetch = FetchType.LAZY,
-            orphanRemoval = true)//,
-    //mappedBy = "client")//, optional = false, orphanRemoval = true)
-    @JoinColumn(name = "id")
-    private Image image;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
