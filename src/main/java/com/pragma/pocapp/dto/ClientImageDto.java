@@ -11,5 +11,6 @@ public class ClientImageDto {
     private Long idNumber;
     private Integer age;
     private String cityOfBirth;
-    //private String imageB64;
+    private String id;
+    private String imageB64;
 }

@@ -2,6 +2,7 @@ package com.pragma.pocapp.entity;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.*;
 
@@ -19,17 +20,17 @@ public class Image {
 
     @NonNull
     @ToString.Include
-    @Column(name = "imageB64")
+    @Field(name = "imageB64")
     private String imageB64;
 
     @NonNull
     @ToString.Include
-    @Column(name = "idType", nullable = false)
+    @Field(name = "idType")
     private String idType;
 
     @NonNull
     @ToString.Include
-    @Column(name = "idNumber", nullable = false)
+    @Field(name = "idNumber")
     private Long idNumber;
 
     @Override
