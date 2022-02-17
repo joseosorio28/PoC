@@ -20,12 +20,17 @@ public class ClientController {
     @Autowired
     public ClientController(ClientService clientService) {
         this.clientService = clientService;
-
     }
 
     @GetMapping("/clients")
     public ResponseEntity<List<ClientImageDto>> listAllClients() {
         return new ResponseEntity<>(clientService.getClients(), HttpStatus.FOUND);
+    }
+
+    @GetMapping("/clientsbyage")
+    public ResponseEntity<List<ClientImageDto>> listClientsByAge(
+            @RequestParam(name = "age") Integer age) {
+        return new ResponseEntity<>(clientService.getClientsByAge(age), HttpStatus.FOUND);
     }
 
     @GetMapping("client")
@@ -42,8 +47,11 @@ public class ClientController {
     }
 
     @PutMapping
-    public ResponseEntity<ClientImageDto> updateClient(@Valid @RequestBody ClientImageDto clientImageDto) {
-        return new ResponseEntity<>(clientService.updateClient(clientImageDto), HttpStatus.ACCEPTED);
+    public ResponseEntity<ClientImageDto> updateClient(
+            @Valid @RequestBody ClientImageDto clientImageDto,
+            @RequestParam(name = "idType") String idType,
+            @RequestParam(name = "idNumber") Long idNumber) {
+        return new ResponseEntity<>(clientService.updateClient(clientImageDto,idType,idNumber), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("client")

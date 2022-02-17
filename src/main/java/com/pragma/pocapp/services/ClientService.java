@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ClientService {
@@ -18,7 +20,7 @@ public class ClientService {
     private final ClientRepository clientRepository;
     private final ImageRepository imageRepository;
     private final ClientMapper clientMapper;
-    private static final String NO_CLIENT_FOUND = "Client not present in DB";
+    private static final String CLIENT_NOT_FOUND = "Client not present in DB";
     private static final String CLIENT_FOUND = "Client already in DB";
 
 
@@ -33,7 +35,24 @@ public class ClientService {
 
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
-        return clientMapper.toDtos(clientRepository.findAll(), imageRepository.findAll());
+        return clientMapper.toDtos(
+                clientRepository
+                        .findAll(),
+                imageRepository
+                        .findAll());
+    }
+
+    //Method for handle single GET request that returns all clients by age
+    public List<ClientImageDto> getClientsByAge(Integer age) {
+        List<Client> clients = clientRepository
+                .findByAgeGreaterThan(age)
+                .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND));
+        List<Image> images = imageRepository
+                .findByIdTypeAndIdNumberIn(
+                        clients.stream().map(Client::getIdType).collect(Collectors.toList()),
+                        clients.stream().map(Client::getIdNumber).collect(Collectors.toList()))
+                .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND));
+        return clientMapper.toDtos(clients, images);
     }
 
     //Method for handle single GET request that returns one client
@@ -41,10 +60,10 @@ public class ClientService {
         return clientMapper.toDto(
                 clientRepository
                         .findByIdTypeAndIdNumber(idType, idNumber)
-                        .orElseThrow(() -> new IllegalStateException(NO_CLIENT_FOUND)),
+                        .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)),
                 imageRepository
                         .findByIdTypeAndIdNumber(idType, idNumber)
-                        .orElseThrow(() -> new IllegalStateException(NO_CLIENT_FOUND)));
+                        .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)));
     }
 
     //Method for handle single POST request
@@ -76,34 +95,77 @@ public class ClientService {
 
     //Method for handle single PUT request by client IdType and IdNumber
     @Transactional
-    public ClientImageDto updateClient(ClientImageDto clientDto) {
+    public ClientImageDto updateClient(ClientImageDto clientDto, String idType, Long idNumber) {
         Client client = clientMapper.toClient(clientDto);
         Image image = clientMapper.toImage(clientDto);
-        return clientMapper.toDto(
-                clientRepository
-                        .findByIdTypeAndIdNumber(client.getIdType(), client.getIdNumber())
-                        .map(presentClient -> {
-                            presentClient.setFirstName(client.getFirstName());
-                            presentClient.setLastName(client.getLastName());
-                            presentClient.setIdType(client.getIdType());
-                            presentClient.setIdNumber(client.getIdNumber());
-                            presentClient.setAge(client.getAge());
-                            presentClient.setCityOfBirth(client.getCityOfBirth());
-                            return clientRepository.save(presentClient);
-                        })
-                        .orElseGet(() ->
-                                clientRepository.save(client)),
-                imageRepository
-                        .findByIdTypeAndIdNumber(image.getIdType(), image.getIdNumber())
-                        .map(presentImage -> {
-                            presentImage.setImageB64(image.getImageB64());
-                            presentImage.setIdType(image.getIdType());
-                            presentImage.setIdNumber(image.getIdNumber());
-                            return imageRepository.save(presentImage);
-                        })
-                        .orElseGet(() ->
-                                imageRepository.save(image))
-        );
+
+        int updateCase = selectUpdateCase(idType, idNumber, client.getIdType(), client.getIdNumber());
+
+        switch (updateCase) {
+            case 1://Update fields
+                return clientMapper.toDto(
+                        clientRepository
+                                .findByIdTypeAndIdNumber(idType, idNumber)
+                                .map(presentClient -> {
+                                    presentClient.setFirstName(client.getFirstName());
+                                    presentClient.setLastName(client.getLastName());
+                                    presentClient.setIdType(client.getIdType());
+                                    presentClient.setIdNumber(client.getIdNumber());
+                                    presentClient.setAge(client.getAge());
+                                    presentClient.setCityOfBirth(client.getCityOfBirth());
+                                    return clientRepository.save(presentClient);
+                                }).orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)),
+                        imageRepository
+                                .findByIdTypeAndIdNumber(idType, idNumber)
+                                .map(presentImage -> {
+                                    presentImage.setImageB64(image.getImageB64());
+                                    presentImage.setIdType(image.getIdType());
+                                    presentImage.setIdNumber(image.getIdNumber());
+                                    return imageRepository.save(presentImage);
+                                }).orElseGet(()->{
+                                    Image newImage = new Image();
+                                    newImage.setImageB64(image.getImageB64());
+                                    newImage.setIdType(image.getIdType());
+                                    newImage.setIdNumber(image.getIdNumber());
+                                    return imageRepository.save(newImage);
+                                }));
+            case 2://Create new client
+                return clientMapper.toDto(
+                        clientRepository.save(client),
+                        imageRepository.save(image));
+            case 3://Client already in DB with another name
+                throw new IllegalStateException(CLIENT_FOUND);
+            case 4://Client requested to update not present in DB
+                throw new IllegalStateException(CLIENT_NOT_FOUND);
+            default://Something awful happened
+                throw new IllegalStateException(CLIENT_NOT_FOUND);
+        }
+    }
+
+    private int selectUpdateCase(String idTypeRequest, Long idNumberRequest,
+                                 String idTypeInJson, Long idNumberInJson) {
+
+        boolean isClientPresentByRequestParam = clientRepository
+                .findByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)
+                .isPresent();
+        boolean isClientPresentByJsonData = clientRepository
+                .findByIdTypeAndIdNumber(idTypeInJson, idNumberInJson)
+                .isPresent();
+
+        if (!isClientPresentByJsonData && isClientPresentByRequestParam) {
+            return 1;//Client present then update fields
+        } else if (!isClientPresentByJsonData) {
+            return 2;//Client not present then create new client
+        } else if (isClientPresentByRequestParam) {
+            if ((Objects.equals(idTypeInJson, idTypeRequest)) &&
+                    (Objects.equals(idNumberInJson, idNumberRequest))) {
+                return 1;//Client present then update fields
+            } else {
+                return 3;//Client already in DB with another name
+            }
+        } else {
+            return 4;//Client requested to update not present in DB
+        }
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
@@ -112,10 +174,10 @@ public class ClientService {
                 .findByIdTypeAndIdNumber(idType, idNumber)
                 .ifPresentOrElse(
                         client ->
-                                clientRepository.deleteById(client.getClientId())
+                                clientRepository.deleteByClientId(client.getClientId())
                         ,
                         () -> {
-                            throw new IllegalStateException(NO_CLIENT_FOUND);
+                            throw new IllegalStateException(CLIENT_NOT_FOUND);
                         });
         imageRepository
                 .findByIdTypeAndIdNumber(idType, idNumber)
@@ -124,7 +186,8 @@ public class ClientService {
                                 imageRepository.deleteById(image.getId())
                         ,
                         () -> {
-                            throw new IllegalStateException(NO_CLIENT_FOUND);
+                            throw new IllegalStateException(CLIENT_NOT_FOUND);
                         });
     }
+
 }

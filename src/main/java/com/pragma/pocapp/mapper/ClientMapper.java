@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Use maybe beanutils.copyproperties
+
 @Mapper(componentModel = "spring")
 public interface ClientMapper {
 
@@ -41,17 +43,18 @@ public interface ClientMapper {
     @Mapping(target = "imageB64", source = "image.imageB64")
     ClientImageDto toDto(Client client, Image image);
 
-    default List<ClientImageDto> toDtos(List<Client> clients, List<Image> images){
-        if (clients == null || images == null ||
-                clients.size() != images.size()) {
+    default List<ClientImageDto> toDtos(List<Client> clients, List<Image> images) {
+        if (clients == null || images == null) {
             return Collections.emptyList();
         }
 
         List<ClientImageDto> list = new ArrayList<>(clients.size());
-        int i=0;
         for (Client client : clients) {
-            list.add(toDto(client,images.get(i)));
-            i++;
+            Image imageFound = images.stream()
+                    .filter(image -> image.getIdType().equals(client.getIdType()) && image.getIdNumber().equals(client.getIdNumber()))
+                    .findFirst()
+                    .orElseGet(() -> new Image("Image not found in DB","",client.getIdType(),client.getIdNumber()));
+            list.add(toDto(client, imageFound));
         }
         return list;
     }
