@@ -18,32 +18,26 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "native")
     private Long clientId;
 
-    @NonNull
     @ToString.Include
     @Column(name = "firstName", nullable = false)
     private String firstName;
 
-    @NonNull
     @ToString.Include
     @Column(name = "lastName", nullable = false)
     private String lastName;
 
-    @NonNull
     @ToString.Include
     @Column(name = "idType", nullable = false)
     private String idType;
 
-    @NonNull
     @ToString.Include
     @Column(name = "idNumber", nullable = false)
     private Long idNumber;
 
-    @NonNull
     @ToString.Include
     @Column(name = "age", nullable = false)
     private Integer age;
 
-    @NonNull
     @ToString.Include
     @Column(name = "cityOfBirth", nullable = false)
     private String cityOfBirth;

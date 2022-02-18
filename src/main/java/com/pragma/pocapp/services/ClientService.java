@@ -1,5 +1,6 @@
 package com.pragma.pocapp.services;
 
+import com.pragma.pocapp.advisor.*;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;
@@ -10,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,9 +23,6 @@ public class ClientService {
     private final ClientRepository clientRepository;
     private final ImageRepository imageRepository;
     private final ClientMapper clientMapper;
-    private static final String CLIENT_NOT_FOUND = "Client not present in DB";
-    private static final String CLIENT_FOUND = "Client already in DB";
-
 
     @Autowired
     public ClientService(ClientRepository clientRepository,
@@ -35,9 +35,10 @@ public class ClientService {
 
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
-        return clientMapper.toDtos(
-                clientRepository
-                        .findAll(),
+        return clientMapper.toDtos(Optional.of(
+                                clientRepository
+                                        .findAll())
+                        .orElseThrow(ClientNotFoundException::new),
                 imageRepository
                         .findAll());
     }
@@ -46,24 +47,25 @@ public class ClientService {
     public List<ClientImageDto> getClientsByAge(Integer age) {
         List<Client> clients = clientRepository
                 .findByAgeGreaterThan(age)
-                .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND));
+                .orElseThrow(() -> new ClientByAgeNotFoundException(age));
         List<Image> images = imageRepository
                 .findByIdTypeAndIdNumberIn(
                         clients.stream().map(Client::getIdType).collect(Collectors.toList()),
                         clients.stream().map(Client::getIdNumber).collect(Collectors.toList()))
-                .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND));
+                .orElseGet(Collections::emptyList);
         return clientMapper.toDtos(clients, images);
     }
 
     //Method for handle single GET request that returns one client
+    @Transactional
     public ClientImageDto searchClient(String idType, Long idNumber) {
         return clientMapper.toDto(
                 clientRepository
                         .findByIdTypeAndIdNumber(idType, idNumber)
-                        .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)),
+                        .orElseThrow(() -> new ClientNotFoundException(idType, idNumber)),
                 imageRepository
                         .findByIdTypeAndIdNumber(idType, idNumber)
-                        .orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)));
+                        .orElseGet(Image::new));
     }
 
     //Method for handle single POST request
@@ -76,21 +78,20 @@ public class ClientService {
                         newClient.getIdNumber())
                 .ifPresentOrElse(
                         client -> {
-                            throw new IllegalStateException(CLIENT_FOUND);
+                            throw new ClientFoundException(
+                                    newClient.getIdType(),
+                                    newClient.getIdNumber());
                         },
                         () ->
                                 clientRepository.save(newClient));
+
         Image newClientImage = clientMapper.toImage(newClientDto);
-        imageRepository
-                .findByIdTypeAndIdNumber(
-                        newClientImage.getIdType(),
-                        newClientImage.getIdNumber())
-                .ifPresentOrElse(
-                        client -> {
-                            throw new IllegalStateException(CLIENT_FOUND);
-                        },
-                        () ->
-                                imageRepository.save(newClientImage));
+        imageRepository.save(
+                imageRepository
+                        .findByIdTypeAndIdNumber(
+                                newClientImage.getIdType(),
+                                newClientImage.getIdNumber())
+                        .orElse(newClientImage));
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
@@ -114,7 +115,7 @@ public class ClientService {
                                     presentClient.setAge(client.getAge());
                                     presentClient.setCityOfBirth(client.getCityOfBirth());
                                     return clientRepository.save(presentClient);
-                                }).orElseThrow(() -> new IllegalStateException(CLIENT_NOT_FOUND)),
+                                }).orElseThrow(DefaultException::new),
                         imageRepository
                                 .findByIdTypeAndIdNumber(idType, idNumber)
                                 .map(presentImage -> {
@@ -122,7 +123,7 @@ public class ClientService {
                                     presentImage.setIdType(image.getIdType());
                                     presentImage.setIdNumber(image.getIdNumber());
                                     return imageRepository.save(presentImage);
-                                }).orElseGet(()->{
+                                }).orElseGet(() -> {
                                     Image newImage = new Image();
                                     newImage.setImageB64(image.getImageB64());
                                     newImage.setIdType(image.getIdType());
@@ -133,12 +134,12 @@ public class ClientService {
                 return clientMapper.toDto(
                         clientRepository.save(client),
                         imageRepository.save(image));
-            case 3://Client already in DB with another name
-                throw new IllegalStateException(CLIENT_FOUND);
+            case 3://Client already in DB with another data
+                throw new ClientUpdateException(idType, idNumber, client.getIdType(), client.getIdNumber());
             case 4://Client requested to update not present in DB
-                throw new IllegalStateException(CLIENT_NOT_FOUND);
+                throw new ClientNotFoundException(idType, idNumber);
             default://Something awful happened
-                throw new IllegalStateException(CLIENT_NOT_FOUND);
+                throw new DefaultException();
         }
     }
 
@@ -161,7 +162,7 @@ public class ClientService {
                     (Objects.equals(idNumberInJson, idNumberRequest))) {
                 return 1;//Client present then update fields
             } else {
-                return 3;//Client already in DB with another name
+                return 3;//Client already in DB with another data
             }
         } else {
             return 4;//Client requested to update not present in DB
@@ -169,6 +170,7 @@ public class ClientService {
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
+    @Transactional
     public void deleteClient(String idType, Long idNumber) {
         clientRepository
                 .findByIdTypeAndIdNumber(idType, idNumber)
@@ -177,7 +179,7 @@ public class ClientService {
                                 clientRepository.deleteByClientId(client.getClientId())
                         ,
                         () -> {
-                            throw new IllegalStateException(CLIENT_NOT_FOUND);
+                            throw new ClientNotFoundException(idType, idNumber);
                         });
         imageRepository
                 .findByIdTypeAndIdNumber(idType, idNumber)
@@ -186,7 +188,7 @@ public class ClientService {
                                 imageRepository.deleteById(image.getId())
                         ,
                         () -> {
-                            throw new IllegalStateException(CLIENT_NOT_FOUND);
+                            throw new ClientNotFoundException(idType, idNumber);
                         });
     }
 

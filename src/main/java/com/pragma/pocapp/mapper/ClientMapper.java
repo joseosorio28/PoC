@@ -53,7 +53,8 @@ public interface ClientMapper {
             Image imageFound = images.stream()
                     .filter(image -> image.getIdType().equals(client.getIdType()) && image.getIdNumber().equals(client.getIdNumber()))
                     .findFirst()
-                    .orElseGet(() -> new Image("Image not found in DB","",client.getIdType(),client.getIdNumber()));
+                    .orElseGet(() -> new Image("-1","Doesn't has saved image in the database",
+                            client.getIdType(),client.getIdNumber()));
             list.add(toDto(client, imageFound));
         }
         return list;

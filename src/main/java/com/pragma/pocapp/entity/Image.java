@@ -18,17 +18,14 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private String id;
 
-    @NonNull
     @ToString.Include
     @Field(name = "imageB64")
     private String imageB64;
 
-    @NonNull
     @ToString.Include
     @Field(name = "idType")
     private String idType;
 
-    @NonNull
     @ToString.Include
     @Field(name = "idNumber")
     private Long idNumber;
