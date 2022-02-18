@@ -44,8 +44,12 @@ public interface ClientMapper {
     ClientImageDto toDto(Client client, Image image);
 
     default List<ClientImageDto> toDtos(List<Client> clients, List<Image> images) {
-        if (clients == null || images == null) {
+        if (clients == null) {
             return Collections.emptyList();
+        }
+
+        if (images == null) {
+            images = Collections.emptyList();
         }
 
         List<ClientImageDto> list = new ArrayList<>(clients.size());
