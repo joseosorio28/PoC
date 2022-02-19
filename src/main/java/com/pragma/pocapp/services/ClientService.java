@@ -10,6 +10,7 @@ import com.pragma.pocapp.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 @Service
@@ -62,8 +63,8 @@ public class ClientService {
                 .ifPresentOrElse(
                         client -> {
                             throw new ClientFoundException(
-                                    newClient.getIdType(),
-                                    newClient.getIdNumber());
+                                    client.getIdType(),
+                                    client.getIdNumber());
                         },
                         () ->
                                 clientRepository.save(newClient));
@@ -79,77 +80,79 @@ public class ClientService {
 
     //Method for handle single PUT request by client IdType and IdNumber
     @Transactional
-    public ClientImageDto updateClient(ClientImageDto clientDto, String idType, Long idNumber) {
+    public void updateClientReview(ClientImageDto clientDto, String idTypeRequest, Long idNumberRequest) {
         Client client = clientMapper.toClient(clientDto);
         Image image = clientMapper.toImage(clientDto);
+        String idTypeInJson = client.getIdType();
+        Long idNumberInJson = client.getIdNumber();
 
-        int updateCase = selectUpdateCase(idType, idNumber, client.getIdType(), client.getIdNumber());
+        List<Client> clients = clientRepository.findAll();
 
-        switch (updateCase) {
-            case 1://Update fields
-                return clientMapper.toDto(
-                        clientRepository
-                                .findByIdTypeAndIdNumber(idType, idNumber)
-                                .map(presentClient -> {
-                                    presentClient.setFirstName(client.getFirstName());
-                                    presentClient.setLastName(client.getLastName());
-                                    presentClient.setIdType(client.getIdType());
-                                    presentClient.setIdNumber(client.getIdNumber());
-                                    presentClient.setAge(client.getAge());
-                                    presentClient.setCityOfBirth(client.getCityOfBirth());
-                                    return clientRepository.save(presentClient);
-                                }).orElseThrow(DefaultException::new),
-                        imageRepository
-                                .findByIdTypeAndIdNumber(idType, idNumber)
-                                .map(presentImage -> {
-                                    presentImage.setImageB64(image.getImageB64());
-                                    presentImage.setIdType(image.getIdType());
-                                    presentImage.setIdNumber(image.getIdNumber());
-                                    return imageRepository.save(presentImage);
-                                }).orElseGet(() -> {
-                                    Image newImage = new Image();
-                                    newImage.setImageB64(image.getImageB64());
-                                    newImage.setIdType(image.getIdType());
-                                    newImage.setIdNumber(image.getIdNumber());
-                                    return imageRepository.save(newImage);
-                                }));
-            case 2://Create new client
-                return clientMapper.toDto(
-                        clientRepository.save(client),
-                        imageRepository.save(image));
-            case 3://Client already in DB with another data
-                throw new ClientUpdateException(idType, idNumber, client.getIdType(), client.getIdNumber());
-            case 4://Client requested to update not present in DB
-                throw new ClientNotFoundException(idType, idNumber);
-            default://Something awful happened
-                throw new DefaultException();
+        Optional<Client> clientFoundByRequest = clients
+                .stream()
+                .filter(clientSearch ->
+                        clientSearch.getIdType().equals(idTypeRequest) &&
+                                clientSearch.getIdNumber().equals(idNumberRequest))
+                .findFirst();
+        boolean isClientPresentByRequestParam = clientFoundByRequest.isPresent();
+
+        Optional<Client> clientFoundByJson = clients
+                .stream()
+                .filter(clientSearch ->
+                        clientSearch.getIdType().equals(idTypeInJson) &&
+                                clientSearch.getIdNumber().equals(idNumberInJson))
+                .findFirst();
+        boolean isClientPresentByJsonData = clientFoundByJson.isPresent();
+
+        if (!isClientPresentByJsonData && isClientPresentByRequestParam) {
+            clientFoundByRequest.ifPresent(
+                    presentClient->{
+                        updateClient(presentClient,client);
+                        updateImage(image, idTypeRequest, idNumberRequest);});
+        } else if (!isClientPresentByJsonData) {
+            clientRepository.save(client);//Client not present then create new client
+            updateImage(image, idTypeRequest, idNumberRequest);
+        } else if (isClientPresentByRequestParam) {
+            if ((idTypeInJson.equals(idTypeRequest)) &&
+                    (idNumberInJson.equals(idNumberRequest))) {
+                clientFoundByRequest.ifPresent(
+                        presentClient->{
+                            updateClient(presentClient,client);
+                            updateImage(image, idTypeRequest, idNumberRequest);});
+            } else {
+                throw new ClientUpdateException(idTypeRequest, idNumberRequest,
+                        idTypeInJson, idNumberInJson);//Client already in DB with another data
+            }
+        } else {
+            throw new ClientNotFoundException(idTypeRequest, idNumberRequest);//Client requested to update not present in DB
         }
     }
 
-    private int selectUpdateCase(String idTypeRequest, Long idNumberRequest,
-                                 String idTypeInJson, Long idNumberInJson) {
+    public void updateClient(Client presentClient, Client client) {
+            presentClient.setFirstName(client.getFirstName());
+            presentClient.setLastName(client.getLastName());
+            presentClient.setIdType(client.getIdType());
+            presentClient.setIdNumber(client.getIdNumber());
+            presentClient.setAge(client.getAge());
+            presentClient.setCityOfBirth(client.getCityOfBirth());
+            clientRepository.save(presentClient);
+    }
 
-        boolean isClientPresentByRequestParam = clientRepository
+    public void updateImage(Image image, String idTypeRequest, Long idNumberRequest) {
+        imageRepository
                 .findByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)
-                .isPresent();
-        boolean isClientPresentByJsonData = clientRepository
-                .findByIdTypeAndIdNumber(idTypeInJson, idNumberInJson)
-                .isPresent();
-
-        if (!isClientPresentByJsonData && isClientPresentByRequestParam) {
-            return 1;//Client present then update fields
-        } else if (!isClientPresentByJsonData) {
-            return 2;//Client not present then create new client
-        } else if (isClientPresentByRequestParam) {
-            if ((Objects.equals(idTypeInJson, idTypeRequest)) &&
-                    (Objects.equals(idNumberInJson, idNumberRequest))) {
-                return 1;//Client present then update fields
-            } else {
-                return 3;//Client already in DB with another data
-            }
-        } else {
-            return 4;//Client requested to update not present in DB
-        }
+                .ifPresentOrElse(presentImage -> {
+                    presentImage.setImageB64(image.getImageB64());
+                    presentImage.setIdType(image.getIdType());
+                    presentImage.setIdNumber(image.getIdNumber());
+                    imageRepository.save(presentImage);
+                }, () -> {
+                    Image newImage = new Image();
+                    newImage.setImageB64(image.getImageB64());
+                    newImage.setIdType(image.getIdType());
+                    newImage.setIdNumber(image.getIdNumber());
+                    imageRepository.save(newImage);
+                });
     }
 
     //Method for handle single PUT request by client IdType and IdNumber

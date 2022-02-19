@@ -23,6 +23,7 @@ public class ClientImageDto {
     @Size(min = 2, max = 5, message = "CC/TI/PP, the length of full name must be between 2 and 5 characters.")
     private String idType;
 
+    @NotNull(message = "Field required to create/update client")
     @Range(min =1, message = "Field required to create/read/update/delete client. " +
             "Must be positive number representing identification")
     private Long idNumber;

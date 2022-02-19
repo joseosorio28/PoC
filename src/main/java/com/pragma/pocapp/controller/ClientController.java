@@ -49,7 +49,8 @@ public class ClientController {
             @Valid @RequestBody ClientImageDto clientImageDto,
             @RequestParam(name = "idType") String idType,
             @RequestParam(name = "idNumber") Long idNumber) {
-        return new ResponseEntity<>(clientService.updateClient(clientImageDto,idType,idNumber), HttpStatus.ACCEPTED);
+        clientService.updateClientReview(clientImageDto,idType,idNumber);
+        return new ResponseEntity<>(clientImageDto, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("client")
@@ -57,7 +58,8 @@ public class ClientController {
             @RequestParam String idType,
             @RequestParam Long idNumber) {
         clientService.deleteClient(idType, idNumber);
-        return new ResponseEntity<>("User deleted", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("User deleted with id: "+
+                idType+" "+idNumber , HttpStatus.ACCEPTED);
     }
 
 }

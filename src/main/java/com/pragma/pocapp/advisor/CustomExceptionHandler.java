@@ -1,5 +1,6 @@
 package com.pragma.pocapp.advisor;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         STATUS_CODES.put(ClientFoundException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
         STATUS_CODES.put(ClientNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
         STATUS_CODES.put(ClientByAgeNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
+        STATUS_CODES.put(ClientUpdateException.class.getSimpleName(),HttpStatus.NOT_ACCEPTABLE.value());
+        STATUS_CODES.put(DataIntegrityViolationException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
     }
 
     @ExceptionHandler(value
