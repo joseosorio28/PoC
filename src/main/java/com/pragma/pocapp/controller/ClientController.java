@@ -3,7 +3,7 @@ package com.pragma.pocapp.controller;
 
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.services.ClientService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,14 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("api")
 @Validated
+@RequiredArgsConstructor
 public class ClientController {
 
     private final ClientService clientService;
-
-    @Autowired
-    public ClientController(ClientService clientService) {
-        this.clientService = clientService;
-    }
 
     @GetMapping("/clients")
     public ResponseEntity<List<ClientImageDto>> listAllClients() {

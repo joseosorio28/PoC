@@ -7,37 +7,23 @@ import com.pragma.pocapp.entity.Image;
 import com.pragma.pocapp.mapper.ClientMapper;
 import com.pragma.pocapp.repository.ClientRepository;
 import com.pragma.pocapp.repository.ImageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ClientService {
 
     private final ClientRepository clientRepository;
     private final ImageRepository imageRepository;
     private final ClientMapper clientMapper;
 
-    @Autowired
-    public ClientService(ClientRepository clientRepository,
-                         ClientMapper clientMapper,
-                         ImageRepository imageRepository) {
-        this.clientRepository = clientRepository;
-        this.clientMapper = clientMapper;
-        this.imageRepository = imageRepository;
-    }
-
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
-        return clientMapper.toDtos(Optional.of(
-                                clientRepository
-                                        .findAll())
+        return clientMapper.toDtos(
+                Optional.of(clientRepository.findAll())
                         .orElseThrow(ClientNotFoundException::new),
                 imageRepository
                         .findAll());
@@ -45,15 +31,12 @@ public class ClientService {
 
     //Method for handle single GET request that returns all clients by age
     public List<ClientImageDto> getClientsByAge(Integer age) {
-        List<Client> clients = clientRepository
-                .findByAgeGreaterThan(age)
-                .orElseThrow(() -> new ClientByAgeNotFoundException(age));
-        List<Image> images = imageRepository
-                .findByIdTypeAndIdNumberIn(
-                        clients.stream().map(Client::getIdType).collect(Collectors.toList()),
-                        clients.stream().map(Client::getIdNumber).collect(Collectors.toList()))
-                .orElseGet(Collections::emptyList);
-        return clientMapper.toDtos(clients, images);
+        return clientMapper.toDtos(
+                clientRepository
+                        .findByAgeGreaterThan(age)
+                        .orElseThrow(() -> new ClientByAgeNotFoundException(age)),
+                imageRepository
+                        .findAll());
     }
 
     //Method for handle single GET request that returns one client

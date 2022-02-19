@@ -52,7 +52,7 @@ public interface ClientMapper {
             images = Collections.emptyList();
         }
 
-        List<ClientImageDto> list = new ArrayList<>(clients.size());
+        List<ClientImageDto> list = new ArrayList<>();
         for (Client client : clients) {
             Image imageFound = images.stream()
                     .filter(image -> image.getIdType().equals(client.getIdType()) && image.getIdNumber().equals(client.getIdNumber()))
