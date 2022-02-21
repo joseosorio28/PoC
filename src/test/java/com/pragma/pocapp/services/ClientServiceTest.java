@@ -41,12 +41,12 @@ class ClientServiceTest {
     static void beforeAll() {
         //Given:
         client = new Client(1L, "firstname1", "lastname1",
-                "CC1", 1L, 30, "city1");
+                "CC", 1L, 30, "city1");
 
         image = new Image("1", "qwerty1", client.getIdType(), client.getIdNumber());
 
         client2 = new Client(2L, "firstname2", "lastname2",
-                "CC2", 2L, 32, "city2");
+                "CC", 2L, 32, "city2");
 
         Image image2 = new Image("2", "qwerty2", client2.getIdType(), client2.getIdNumber());
 
@@ -181,7 +181,7 @@ class ClientServiceTest {
         //Given
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(client, image);
-        String idTypeRequest = "CC1";
+        String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
@@ -212,7 +212,7 @@ class ClientServiceTest {
                 createNewClientWithSameData(client),
                 createNewClientWithSameData(client2)));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, imageByJson);
-        String idTypeRequest = "CC1";
+        String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
@@ -233,11 +233,11 @@ class ClientServiceTest {
     void wontUpdateClientButCreateIt() {
         //Given
         Client clientByJson = createNewClientWithSameData(client);
-        clientByJson.setIdType("CC1");//New client id
+        clientByJson.setIdType("CC");//New client id
         clientByJson.setIdNumber(3L);
 
         Image imageByJson = createNewImageWithSameData(image);
-        imageByJson.setIdType("CC1");//New client id
+        imageByJson.setIdType("CC");//New client id
         imageByJson.setIdNumber(3L);
 
         List<Client> clients = new ArrayList<>(Arrays.asList(
@@ -271,7 +271,7 @@ class ClientServiceTest {
                 createNewClientWithSameData(client),
                 createNewClientWithSameData(client2)));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, imageByJson);
-        String idTypeRequest = "CC1";
+        String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
@@ -293,7 +293,7 @@ class ClientServiceTest {
         //Given
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(client, image);
-        String idTypeRequest = "TI1";
+        String idTypeRequest = "TI";
         Long idNumberRequest = 1L;
 
         //When
@@ -313,7 +313,7 @@ class ClientServiceTest {
 
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, image);
-        String idTypeRequest = "CC1";
+        String idTypeRequest = "CC";
         Long idNumberRequest = 4L;
 
         //When
@@ -333,7 +333,7 @@ class ClientServiceTest {
 
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, image);
-        String idTypeRequest = "CC1";
+        String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
