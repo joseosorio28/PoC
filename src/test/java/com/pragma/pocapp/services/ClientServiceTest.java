@@ -1,9 +1,6 @@
 package com.pragma.pocapp.services;
 
-import com.pragma.pocapp.advisor.ClientByAgeNotFoundException;
-import com.pragma.pocapp.advisor.ClientFoundException;
-import com.pragma.pocapp.advisor.ClientNotFoundException;
-import com.pragma.pocapp.advisor.ClientUpdateException;
+import com.pragma.pocapp.advisor.*;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;
@@ -20,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -87,17 +85,30 @@ class ClientServiceTest {
     }
 
     @Test
-    void wontGetClientsByAge() {
+    void wontGetClientsByAgeCase1() {
         //Given
         int age = 10;
-        List<Client> clients = Collections.emptyList();
 
         //When
-        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(Optional.empty());
+        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(Optional.empty());//No clients in DB
 
         //Then
         assertThrows(ClientByAgeNotFoundException.class,
                 () -> clientService.getClientsByAge(age));
+    }
+
+    @Test
+    void wontGetClientsByAgeCase2() {
+        //Given
+        int age1 = 150;//Age out off bounds
+        int age2 = 0;//Age out off bounds
+
+        //When and Then
+
+        assertAll(
+                () -> assertThrows(ClientSearchAgeException.class,() -> clientService.getClientsByAge(age1)),
+                () -> assertThrows(ClientSearchAgeException.class,() -> clientService.getClientsByAge(age2))
+        );
     }
 
     @Test
@@ -342,7 +353,7 @@ class ClientServiceTest {
         //When
         when(clientRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)).thenReturn(Optional.of(client));
         when(imageRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)).thenReturn(Optional.of(image));
-        clientService.deleteClient(idTypeRequest,idNumberRequest);
+        clientService.deleteClient(idTypeRequest, idNumberRequest);
 
         //Then
         verify(clientRepository).findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest);

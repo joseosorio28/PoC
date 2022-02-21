@@ -53,6 +53,7 @@ class CustomExceptionHandlerTest {
         exceptions.add(new ClientNotFoundException(idType, idNumber));
         exceptions.add(new ClientByAgeNotFoundException(age));
         exceptions.add(new ClientUpdateException(idType, idNumber, "TI", 4321L));
+        exceptions.add(new ClientSearchAgeException());
 
         //When
         List<ResponseEntity<ErrorResponse>> responses = new ArrayList<>();
@@ -61,6 +62,7 @@ class CustomExceptionHandlerTest {
         responses.add(customExceptionHandler.handleAllExceptions(exceptions.get(2)));
         responses.add(customExceptionHandler.handleAllExceptions(exceptions.get(3)));
         responses.add(customExceptionHandler.handleAllExceptions(exceptions.get(4)));
+        responses.add(customExceptionHandler.handleAllExceptions(exceptions.get(5)));
 
         //Then
         assertAll(
@@ -68,7 +70,9 @@ class CustomExceptionHandlerTest {
                 () -> assertEquals(HttpStatus.NOT_ACCEPTABLE.value(), responses.get(1).getStatusCodeValue()),
                 () -> assertEquals(HttpStatus.NOT_FOUND.value(), responses.get(2).getStatusCodeValue()),
                 () -> assertEquals(HttpStatus.NOT_FOUND.value(), responses.get(3).getStatusCodeValue()),
-                () -> assertEquals(HttpStatus.NOT_ACCEPTABLE.value(), responses.get(4).getStatusCodeValue())
+                () -> assertEquals(HttpStatus.NOT_ACCEPTABLE.value(), responses.get(4).getStatusCodeValue()),
+                () -> assertEquals(HttpStatus.NOT_ACCEPTABLE.value(), responses.get(5).getStatusCodeValue())
+
         );
     }
 
@@ -89,7 +93,7 @@ class CustomExceptionHandlerTest {
     void canHandleMethodArgumentNotValid() {
         //Given
         BindingResult result = new BeanPropertyBindingResult(client, "client");
-        result.rejectValue("clientId","#FF","Error");
+        result.rejectValue("clientId", "#FF", "Error");
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(null, result);
 
         //When

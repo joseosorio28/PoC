@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ClientController {
     @GetMapping("client")
     public ResponseEntity<ClientImageDto> getClient(
             @RequestParam(name = "idType") String idType,
-            @RequestParam(name = "idNumber") Long idNumber){
+            @RequestParam(name = "idNumber") Long idNumber) {
         return new ResponseEntity<>(clientService.searchClient(idType, idNumber), HttpStatus.OK);
     }
 
@@ -49,7 +50,7 @@ public class ClientController {
             @Valid @RequestBody ClientImageDto clientImageDto,
             @RequestParam(name = "idType") String idType,
             @RequestParam(name = "idNumber") Long idNumber) {
-        clientService.updateClientReview(clientImageDto,idType,idNumber);
+        clientService.updateClientReview(clientImageDto, idType, idNumber);
         return new ResponseEntity<>(clientImageDto, HttpStatus.ACCEPTED);
     }
 
@@ -58,8 +59,8 @@ public class ClientController {
             @RequestParam String idType,
             @RequestParam Long idNumber) {
         clientService.deleteClient(idType, idNumber);
-        return new ResponseEntity<>("User deleted with id: "+
-                idType+" "+idNumber , HttpStatus.ACCEPTED);
+        return new ResponseEntity<>("User deleted with id: " +
+                idType + " " + idNumber, HttpStatus.ACCEPTED);
     }
 
 }

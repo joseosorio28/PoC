@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.validation.ConstraintViolationException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestControllerAdvice
@@ -26,7 +27,9 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         STATUS_CODES.put(ClientNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
         STATUS_CODES.put(ClientByAgeNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
         STATUS_CODES.put(ClientUpdateException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
+        STATUS_CODES.put(ClientSearchAgeException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
         STATUS_CODES.put(DataIntegrityViolationException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
+        STATUS_CODES.put(ConstraintViolationException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
     }
 
     @ExceptionHandler(value

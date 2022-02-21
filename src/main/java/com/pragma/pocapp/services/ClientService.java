@@ -1,9 +1,6 @@
 package com.pragma.pocapp.services;
 
-import com.pragma.pocapp.advisor.ClientByAgeNotFoundException;
-import com.pragma.pocapp.advisor.ClientFoundException;
-import com.pragma.pocapp.advisor.ClientNotFoundException;
-import com.pragma.pocapp.advisor.ClientUpdateException;
+import com.pragma.pocapp.advisor.*;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;
@@ -25,6 +22,9 @@ public class ClientService {
     private final ImageRepository imageRepository;
     private final ClientMapper clientMapper;
 
+    private static final int MAX_AGE = 100;
+    private static final int MIN_AGE = 1;
+
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
         return clientMapper.toDtos(
@@ -34,12 +34,16 @@ public class ClientService {
 
     //Method for handle single GET request that returns all clients by age
     public List<ClientImageDto> getClientsByAge(Integer age) {
-        return clientMapper.toDtos(
-                clientRepository
-                        .findByAgeGreaterThan(age)
-                        .orElseThrow(() -> new ClientByAgeNotFoundException(age)),
-                imageRepository
-                        .findAll());
+        if (age >= MIN_AGE && age <= MAX_AGE) {
+            return clientMapper.toDtos(
+                    clientRepository
+                            .findByAgeGreaterThan(age)
+                            .orElseThrow(() -> new ClientByAgeNotFoundException(age)),
+                    imageRepository
+                            .findAll());
+        } else {
+            throw new ClientSearchAgeException();
+        }
     }
 
     //Method for handle single GET request that returns one client
