@@ -25,12 +25,12 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         STATUS_CODES.put(ClientFoundException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
         STATUS_CODES.put(ClientNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
         STATUS_CODES.put(ClientByAgeNotFoundException.class.getSimpleName(), HttpStatus.NOT_FOUND.value());
-        STATUS_CODES.put(ClientUpdateException.class.getSimpleName(),HttpStatus.NOT_ACCEPTABLE.value());
+        STATUS_CODES.put(ClientUpdateException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
         STATUS_CODES.put(DataIntegrityViolationException.class.getSimpleName(), HttpStatus.NOT_ACCEPTABLE.value());
     }
 
     @ExceptionHandler(value
-      = {Exception.class})
+            = {Exception.class})
     protected ResponseEntity<ErrorResponse> handleAllExceptions(Exception exception) {
 
         ResponseEntity<ErrorResponse> response;
@@ -39,10 +39,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         Integer code = STATUS_CODES.get(exceptionName);
 
         if (code != null) {
-            ErrorResponse errorResponse = new ErrorResponse(exceptionName, message,HttpStatus.valueOf(code));
+            ErrorResponse errorResponse = new ErrorResponse(exceptionName, message, HttpStatus.valueOf(code));
             response = new ResponseEntity<>(errorResponse, HttpStatus.valueOf(code));
         } else {
-            ErrorResponse errorResponse = new ErrorResponse(exceptionName, FATAL_ERROR_CONTACT_ADMIN,HttpStatus.INTERNAL_SERVER_ERROR);
+            ErrorResponse errorResponse = new ErrorResponse(exceptionName, FATAL_ERROR_CONTACT_ADMIN, HttpStatus.INTERNAL_SERVER_ERROR);
             response = new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return response;
@@ -64,8 +64,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
                     .append(". ");
         }
         ErrorResponse errorResponse = new ErrorResponse(ex.getClass().getSimpleName(),
-                "Validation errors. "+ errorMessage,
+                "Validation errors. " + errorMessage,
                 status);
         return ResponseEntity.unprocessableEntity().body(errorResponse);
     }
-    }
+}
