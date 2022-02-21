@@ -21,20 +21,20 @@ public class ClientController {
 
     @GetMapping("/clients")
     public ResponseEntity<List<ClientImageDto>> listAllClients() {
-        return new ResponseEntity<>(clientService.getClients(), HttpStatus.FOUND);
+        return new ResponseEntity<>(clientService.getClients(), HttpStatus.OK);
     }
 
     @GetMapping("/clientsbyage")
     public ResponseEntity<List<ClientImageDto>> listClientsByAge(
             @RequestParam(name = "age") Integer age) {
-        return new ResponseEntity<>(clientService.getClientsByAge(age), HttpStatus.FOUND);
+        return new ResponseEntity<>(clientService.getClientsByAge(age), HttpStatus.OK);
     }
 
     @GetMapping("client")
     public ResponseEntity<ClientImageDto> getClient(
             @RequestParam(name = "idType") String idType,
             @RequestParam(name = "idNumber") Long idNumber){
-        return new ResponseEntity<>(clientService.searchClient(idType, idNumber), HttpStatus.FOUND);
+        return new ResponseEntity<>(clientService.searchClient(idType, idNumber), HttpStatus.OK);
     }
 
     @PostMapping

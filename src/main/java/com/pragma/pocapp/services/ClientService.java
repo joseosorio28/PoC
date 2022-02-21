@@ -1,6 +1,9 @@
 package com.pragma.pocapp.services;
 
-import com.pragma.pocapp.advisor.*;
+import com.pragma.pocapp.advisor.ClientByAgeNotFoundException;
+import com.pragma.pocapp.advisor.ClientFoundException;
+import com.pragma.pocapp.advisor.ClientNotFoundException;
+import com.pragma.pocapp.advisor.ClientUpdateException;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;
@@ -11,7 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,10 +28,8 @@ public class ClientService {
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
         return clientMapper.toDtos(
-                Optional.of(clientRepository.findAll())
-                        .orElseThrow(ClientNotFoundException::new),
-                imageRepository
-                        .findAll());
+                clientRepository.findAll(),
+                imageRepository.findAll());
     }
 
     //Method for handle single GET request that returns all clients by age
@@ -45,10 +47,10 @@ public class ClientService {
     public ClientImageDto searchClient(String idType, Long idNumber) {
         return clientMapper.toDto(
                 clientRepository
-                        .findByIdTypeAndIdNumber(idType, idNumber)
+                        .findFirstByIdTypeAndIdNumber(idType, idNumber)
                         .orElseThrow(() -> new ClientNotFoundException(idType, idNumber)),
                 imageRepository
-                        .findByIdTypeAndIdNumber(idType, idNumber)
+                        .findFirstByIdTypeAndIdNumber(idType, idNumber)
                         .orElseGet(Image::new));
     }
 
@@ -57,7 +59,7 @@ public class ClientService {
     public void addClient(ClientImageDto newClientDto) {
         Client newClient = clientMapper.toClient(newClientDto);
         clientRepository
-                .findByIdTypeAndIdNumber(
+                .findFirstByIdTypeAndIdNumber(
                         newClient.getIdType(),
                         newClient.getIdNumber())
                 .ifPresentOrElse(
@@ -72,7 +74,7 @@ public class ClientService {
         Image newClientImage = clientMapper.toImage(newClientDto);
         imageRepository.save(
                 imageRepository
-                        .findByIdTypeAndIdNumber(
+                        .findFirstByIdTypeAndIdNumber(
                                 newClientImage.getIdType(),
                                 newClientImage.getIdNumber())
                         .orElse(newClientImage));
@@ -105,20 +107,22 @@ public class ClientService {
         boolean isClientPresentByJsonData = clientFoundByJson.isPresent();
 
         if (!isClientPresentByJsonData && isClientPresentByRequestParam) {
-            clientFoundByRequest.ifPresent(
-                    presentClient->{
-                        updateClient(presentClient,client);
-                        updateImage(image, idTypeRequest, idNumberRequest);});
+            clientFoundByRequest.ifPresent(//Client present DB so update it
+                    presentClient -> {
+                        updateClient(presentClient, client);
+                        updateImage(image, idTypeRequest, idNumberRequest);
+                    });
         } else if (!isClientPresentByJsonData) {
             clientRepository.save(client);//Client not present then create new client
             updateImage(image, idTypeRequest, idNumberRequest);
         } else if (isClientPresentByRequestParam) {
             if ((idTypeInJson.equals(idTypeRequest)) &&
                     (idNumberInJson.equals(idNumberRequest))) {
-                clientFoundByRequest.ifPresent(
-                        presentClient->{
-                            updateClient(presentClient,client);
-                            updateImage(image, idTypeRequest, idNumberRequest);});
+                clientFoundByRequest.ifPresent(//Client present DB so update it
+                        presentClient -> {
+                            updateClient(presentClient, client);
+                            updateImage(image, idTypeRequest, idNumberRequest);
+                        });
             } else {
                 throw new ClientUpdateException(idTypeRequest, idNumberRequest,
                         idTypeInJson, idNumberInJson);//Client already in DB with another data
@@ -129,18 +133,18 @@ public class ClientService {
     }
 
     public void updateClient(Client presentClient, Client client) {
-            presentClient.setFirstName(client.getFirstName());
-            presentClient.setLastName(client.getLastName());
-            presentClient.setIdType(client.getIdType());
-            presentClient.setIdNumber(client.getIdNumber());
-            presentClient.setAge(client.getAge());
-            presentClient.setCityOfBirth(client.getCityOfBirth());
-            clientRepository.save(presentClient);
+        presentClient.setFirstName(client.getFirstName());
+        presentClient.setLastName(client.getLastName());
+        presentClient.setIdType(client.getIdType());
+        presentClient.setIdNumber(client.getIdNumber());
+        presentClient.setAge(client.getAge());
+        presentClient.setCityOfBirth(client.getCityOfBirth());
+        clientRepository.save(presentClient);
     }
 
     public void updateImage(Image image, String idTypeRequest, Long idNumberRequest) {
         imageRepository
-                .findByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)
+                .findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)
                 .ifPresentOrElse(presentImage -> {
                     presentImage.setImageB64(image.getImageB64());
                     presentImage.setIdType(image.getIdType());
@@ -159,7 +163,7 @@ public class ClientService {
     @Transactional
     public void deleteClient(String idType, Long idNumber) {
         clientRepository
-                .findByIdTypeAndIdNumber(idType, idNumber)
+                .findFirstByIdTypeAndIdNumber(idType, idNumber)
                 .ifPresentOrElse(
                         client ->
                                 clientRepository.deleteByClientId(client.getClientId())
@@ -168,14 +172,11 @@ public class ClientService {
                             throw new ClientNotFoundException(idType, idNumber);
                         });
         imageRepository
-                .findByIdTypeAndIdNumber(idType, idNumber)
-                .ifPresentOrElse(
+                .findFirstByIdTypeAndIdNumber(idType, idNumber)
+                .ifPresent(
                         image ->
                                 imageRepository.deleteById(image.getId())
-                        ,
-                        () -> {
-                            throw new ClientNotFoundException(idType, idNumber);
-                        });
+                );
     }
 
 }

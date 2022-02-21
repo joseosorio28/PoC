@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface ClientRepository extends JpaRepository<Client, Long> {
 
     List<Client> findAll();
-    Optional<Client> findByIdTypeAndIdNumber(String idType, Long idNumber);
+    Optional<Client> findFirstByIdTypeAndIdNumber(String idType, Long idNumber);
     Optional<List<Client>>  findByAgeGreaterThan(Integer age);
     void deleteByClientId(Long clientId);
 }

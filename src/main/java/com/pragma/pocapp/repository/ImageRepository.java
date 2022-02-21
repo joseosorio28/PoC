@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ImageRepository extends MongoRepository<Image, String> {
 
-    Optional<Image> findByIdTypeAndIdNumber(String idType, Long idNumber);
+    Optional<Image> findFirstByIdTypeAndIdNumber(String idType, Long idNumber);
     List<Image> findAll();
 
 }
