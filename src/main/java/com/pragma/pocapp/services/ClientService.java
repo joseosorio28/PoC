@@ -1,6 +1,6 @@
 package com.pragma.pocapp.services;
 
-import com.pragma.pocapp.advisor.*;
+import com.pragma.pocapp.advisor.customexceptions.*;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;

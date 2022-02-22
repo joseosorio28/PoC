@@ -33,6 +33,7 @@ public class ClientImageDto {
     private Integer age;
 
     @NotEmpty(message = "Field required to create/update client")
+    @Size(min = 2, max = 100, message = "The length of the city must be between 2 and 50 characters.")
     private String cityOfBirth;
 
     private String id;

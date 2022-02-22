@@ -1,4 +1,4 @@
-package com.pragma.pocapp.advisor;
+package com.pragma.pocapp.advisor.customexceptions;
 
 public class ClientByAgeNotFoundException extends RuntimeException {
 

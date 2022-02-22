@@ -1,6 +1,6 @@
 package com.pragma.pocapp.services;
 
-import com.pragma.pocapp.advisor.*;
+import com.pragma.pocapp.advisor.customexceptions.*;
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.entity.Client;
 import com.pragma.pocapp.entity.Image;
@@ -11,11 +11,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -106,8 +108,8 @@ class ClientServiceTest {
         //When and Then
 
         assertAll(
-                () -> assertThrows(ClientSearchAgeException.class,() -> clientService.getClientsByAge(age1)),
-                () -> assertThrows(ClientSearchAgeException.class,() -> clientService.getClientsByAge(age2))
+                () -> assertThrows(ClientSearchAgeException.class, () -> clientService.getClientsByAge(age1)),
+                () -> assertThrows(ClientSearchAgeException.class, () -> clientService.getClientsByAge(age2))
         );
     }
 

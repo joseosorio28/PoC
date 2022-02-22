@@ -1,5 +1,6 @@
 package com.pragma.pocapp.advisor;
 
+import com.pragma.pocapp.advisor.customexceptions.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
