@@ -9,6 +9,9 @@ import org.mapstruct.factory.Mappers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 // Use maybe beanutils.copyproperties
 
@@ -52,14 +55,19 @@ public interface ClientMapper {
             images = Collections.emptyList();
         }
 
+        Map<String, Image> imageMap = images
+                .stream()
+                .collect(Collectors.toMap(image -> image.getIdType() + image.getIdNumber(), Function.identity()));
+
         List<ClientImageDto> list = new ArrayList<>();
         for (Client client : clients) {
-            Image imageFound = images.stream()
-                    .filter(image -> image.getIdType().equals(client.getIdType()) && image.getIdNumber().equals(client.getIdNumber()))
-                    .findFirst()
-                    .orElseGet(() -> new Image("-1","Doesn't has saved image in the database",
-                            client.getIdType(),client.getIdNumber()));
-            list.add(toDto(client, imageFound));
+            Image imageFound = imageMap.get(client.getIdType() + client.getIdNumber());
+
+            list.add(toDto(client,
+                    imageFound != null ?
+                            imageFound :
+                            new Image("-1", "Doesn't has saved image in the database",
+                                    client.getIdType(), client.getIdNumber())));
         }
         return list;
     }

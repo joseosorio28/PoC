@@ -14,10 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,9 +46,7 @@ class ClientServiceTest {
         image = new Image("1", "qwerty1", client.getIdType(), client.getIdNumber());
 
         client2 = new Client(2L, "firstname2", "lastname2",
-                "CC", 2L, 32, "city2");
-
-        Image image2 = new Image("2", "qwerty2", client2.getIdType(), client2.getIdNumber());
+                "TI", 2L, 32, "city2");
 
     }
 
@@ -61,13 +57,17 @@ class ClientServiceTest {
 
     @Test
     void canGetClients() {
-        //Then
-        clientService.getClients();
+        //Given
+        List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
 
         //When
-        verify(clientRepository).findAll();
-        verify(imageRepository).findAll();
+        when(clientRepository.findAll()).thenReturn(clients);
+        clientService.getClients();
 
+        //Then
+        verify(clientRepository).findAll();
+        verify(imageRepository).findAllByIdNumberIn(clients.stream().
+                map(Client::getIdNumber).collect(Collectors.toList()));
     }
 
     @Test
@@ -77,13 +77,13 @@ class ClientServiceTest {
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
 
         //When
-        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(Optional.of(clients));
+        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(clients);
         clientService.getClientsByAge(age);
 
         //Then
         verify(clientRepository).findByAgeGreaterThan(age);
-        verify(imageRepository).findAll();
-
+        verify(imageRepository).findAllByIdNumberIn(clients.stream().
+                map(Client::getIdNumber).collect(Collectors.toList()));
     }
 
     @Test
@@ -92,7 +92,7 @@ class ClientServiceTest {
         int age = 10;
 
         //When
-        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(Optional.empty());//No clients in DB
+        when(clientRepository.findByAgeGreaterThan(age)).thenReturn(Collections.emptyList());//No clients in DB
 
         //Then
         assertThrows(ClientByAgeNotFoundException.class,
@@ -183,16 +183,17 @@ class ClientServiceTest {
         //Given
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(client, image);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
         when(imageRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)).thenReturn(Optional.of(image));
         clientService.updateClientReview(clientImageDto, idTypeRequest, idNumberRequest);
 
         //Then
-        verify(clientRepository).findAll();
+        verify(clientRepository).findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
         verify(clientRepository).save(createNewClientWithSameData(client));
 
         verify(imageRepository).findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest);
@@ -214,17 +215,18 @@ class ClientServiceTest {
                 createNewClientWithSameData(client),
                 createNewClientWithSameData(client2)));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, imageByJson);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
         when(imageRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest))
                 .thenReturn(Optional.of(createNewImageWithSameData(image)));
         clientService.updateClientReview(clientImageDto, idTypeRequest, idNumberRequest);
 
         //Then
-        verify(clientRepository).findAll();
+        verify(clientRepository).findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
         verify(clientRepository).save(clientByJson);
 
         verify(imageRepository).findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest);
@@ -246,16 +248,17 @@ class ClientServiceTest {
                 createNewClientWithSameData(client),
                 createNewClientWithSameData(client2)));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, imageByJson);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "TI";
         Long idNumberRequest = 4L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
         when(imageRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)).thenReturn(Optional.empty());
         clientService.updateClientReview(clientImageDto, idTypeRequest, idNumberRequest);
 
         //Then
-        verify(clientRepository).findAll();
+        verify(clientRepository).findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
         verify(clientRepository).save(clientByJson);
 
         verify(imageRepository).findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest);
@@ -273,16 +276,17 @@ class ClientServiceTest {
                 createNewClientWithSameData(client),
                 createNewClientWithSameData(client2)));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, imageByJson);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "CC";
         Long idNumberRequest = 1L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
         when(imageRepository.findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest)).thenReturn(Optional.empty());
         clientService.updateClientReview(clientImageDto, idTypeRequest, idNumberRequest);
 
         //Then
-        verify(clientRepository).findAll();
+        verify(clientRepository).findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
         verify(clientRepository).save(clientByJson);
 
         verify(imageRepository).findFirstByIdTypeAndIdNumber(idTypeRequest, idNumberRequest);
@@ -295,11 +299,12 @@ class ClientServiceTest {
         //Given
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(client, image);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "TI";
         Long idNumberRequest = 1L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
 
         //Then
         assertThrows(ClientNotFoundException.class,
@@ -315,11 +320,12 @@ class ClientServiceTest {
 
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, image);
+        Long idNumberInJson = clientImageDto.getIdNumber();
         String idTypeRequest = "CC";
         Long idNumberRequest = 4L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
 
         //Then
         assertThrows(ClientNotFoundException.class,
@@ -329,17 +335,18 @@ class ClientServiceTest {
     @Test
     void wontUpdateClientCase3() {
         //Given
-        Client clientByJson = createNewClientWithSameData(client);
-        clientByJson.setIdType(client2.getIdType());//Data from another client present in DB
-        clientByJson.setIdNumber(client2.getIdNumber());//This too
+        Client clientByJson = createNewClientWithSameData(client2);
+        clientByJson.setIdType(client.getIdType());//Data from another client present in DB
+        clientByJson.setIdNumber(client.getIdNumber());//This too
 
         List<Client> clients = new ArrayList<>(Arrays.asList(client, client2));
         ClientImageDto clientImageDto = clientMapper.toDto(clientByJson, image);
-        String idTypeRequest = "CC";
-        Long idNumberRequest = 1L;
+        Long idNumberInJson = clientImageDto.getIdNumber();
+        String idTypeRequest = "TI";
+        Long idNumberRequest = 2L;
 
         //When
-        when(clientRepository.findAll()).thenReturn(clients);
+        when(clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson))).thenReturn(clients);
 
         //Then
         assertThrows(ClientUpdateException.class,

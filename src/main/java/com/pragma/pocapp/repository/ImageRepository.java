@@ -12,5 +12,6 @@ public interface ImageRepository extends MongoRepository<Image, String> {
 
     Optional<Image> findFirstByIdTypeAndIdNumber(String idType, Long idNumber);
     List<Image> findAll();
+    List<Image> findAllByIdNumberIn(List<Long> idNumbers);
 
 }

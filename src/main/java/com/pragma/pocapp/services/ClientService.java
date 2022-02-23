@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,20 +29,25 @@ public class ClientService {
 
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
-        return clientMapper.toDtos(
-                clientRepository.findAll(),
-                imageRepository.findAll());
+        List<Client> clients = clientRepository.findAll();
+        return clientMapper.toDtos(clients,
+                imageRepository.findAllByIdNumberIn(clients.stream().
+                        map(Client::getIdNumber).collect(Collectors.toList()))
+        );
     }
 
     //Method for handle single GET request that returns all clients by age
     public List<ClientImageDto> getClientsByAge(Integer age) {
         if (age >= MIN_AGE && age <= MAX_AGE) {
+            List<Client> clients = clientRepository.findByAgeGreaterThan(age);
+            if (clients.isEmpty()) {
+                throw new ClientByAgeNotFoundException(age);
+            }
             return clientMapper.toDtos(
-                    clientRepository
-                            .findByAgeGreaterThan(age)
-                            .orElseThrow(() -> new ClientByAgeNotFoundException(age)),
-                    imageRepository
-                            .findAll());
+                    clients,
+                    imageRepository.findAllByIdNumberIn(clients.stream().
+                            map(Client::getIdNumber).collect(Collectors.toList()))
+            );
         } else {
             throw new ClientSearchAgeException();
         }
@@ -92,7 +99,7 @@ public class ClientService {
         String idTypeInJson = client.getIdType();
         Long idNumberInJson = client.getIdNumber();
 
-        List<Client> clients = clientRepository.findAll();
+        List<Client> clients = clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
 
         Optional<Client> clientFoundByRequest = clients
                 .stream()

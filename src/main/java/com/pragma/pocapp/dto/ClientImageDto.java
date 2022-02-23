@@ -20,7 +20,7 @@ public class ClientImageDto {
     private String lastName;
 
     @NotEmpty(message = "Field required to create/read/update/delete client")
-    @Size(min = 2, max = 5, message = "CC/TI/PP, the length of full name must be between 2 and 5 characters.")
+    @Size(min = 2, max = 5, message = "CC/TI/PP, the length of id type must be between 2 and 5 characters.")
     private String idType;
 
     @NotNull(message = "Field required to create/update client")

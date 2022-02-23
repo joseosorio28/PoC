@@ -10,6 +10,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     List<Client> findAll();
     Optional<Client> findFirstByIdTypeAndIdNumber(String idType, Long idNumber);
-    Optional<List<Client>>  findByAgeGreaterThan(Integer age);
+    List<Client>  findByAgeGreaterThan(Integer age);
     void deleteByClientId(Long clientId);
+    List<Client> findAllByIdNumberIn(Iterable<Long> idNumbers);
 }
