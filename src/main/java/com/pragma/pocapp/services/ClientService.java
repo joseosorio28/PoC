@@ -30,10 +30,7 @@ public class ClientService {
     //Method for handle single GET request that returns all clients
     public List<ClientImageDto> getClients() {
         List<Client> clients = clientRepository.findAll();
-        return clientMapper.toDtos(clients,
-                imageRepository.findAllByIdNumberIn(clients.stream().
-                        map(Client::getIdNumber).collect(Collectors.toList()))
-        );
+        return clientMapper.toDtos(clients, imagesAvailable(clients));
     }
 
     //Method for handle single GET request that returns all clients by age
@@ -43,14 +40,16 @@ public class ClientService {
             if (clients.isEmpty()) {
                 throw new ClientByAgeNotFoundException(age);
             }
-            return clientMapper.toDtos(
-                    clients,
-                    imageRepository.findAllByIdNumberIn(clients.stream().
-                            map(Client::getIdNumber).collect(Collectors.toList()))
+            return clientMapper.toDtos(clients, imagesAvailable(clients)
             );
         } else {
             throw new ClientSearchAgeException();
         }
+    }
+
+    public List<Image> imagesAvailable(List<Client> clients) {
+        return imageRepository.findAllByIdNumberIn(clients.stream().
+                map(Client::getIdNumber).collect(Collectors.toList()));
     }
 
     //Method for handle single GET request that returns one client
@@ -92,64 +91,61 @@ public class ClientService {
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
+
+    public Optional<Client> searchInClientList(List<Client> clients, String idType, Long idNumber) {
+        return clients
+                .stream()
+                .filter(clientSearch ->
+                        clientSearch.getIdType().equals(idType) &&
+                                clientSearch.getIdNumber().equals(idNumber))
+                .findFirst();
+    }
+
     @Transactional
     public void updateClientReview(ClientImageDto clientDto, String idTypeRequest, Long idNumberRequest) {
-        Client client = clientMapper.toClient(clientDto);
-        Image image = clientMapper.toImage(clientDto);
-        String idTypeInJson = client.getIdType();
-        Long idNumberInJson = client.getIdNumber();
-
+        String idTypeInJson = clientDto.getIdType();
+        Long idNumberInJson = clientDto.getIdNumber();
         List<Client> clients = clientRepository.findAllByIdNumberIn(Arrays.asList(idNumberRequest, idNumberInJson));
 
-        Optional<Client> clientFoundByRequest = clients
-                .stream()
-                .filter(clientSearch ->
-                        clientSearch.getIdType().equals(idTypeRequest) &&
-                                clientSearch.getIdNumber().equals(idNumberRequest))
-                .findFirst();
+        Optional<Client> clientFoundByRequest = searchInClientList(clients, idTypeRequest, idNumberRequest);
         boolean isClientPresentByRequestParam = clientFoundByRequest.isPresent();
-
-        Optional<Client> clientFoundByJson = clients
-                .stream()
-                .filter(clientSearch ->
-                        clientSearch.getIdType().equals(idTypeInJson) &&
-                                clientSearch.getIdNumber().equals(idNumberInJson))
-                .findFirst();
+        Optional<Client> clientFoundByJson = searchInClientList(clients, idTypeInJson, idNumberInJson);
         boolean isClientPresentByJsonData = clientFoundByJson.isPresent();
 
-        if (!isClientPresentByJsonData && isClientPresentByRequestParam) {
-            clientFoundByRequest.ifPresent(//Client present DB so update it
-                    presentClient -> {
-                        updateClient(presentClient, client);
-                        updateImage(image, idTypeRequest, idNumberRequest);
-                    });
+        if (!isClientPresentByJsonData && isClientPresentByRequestParam) {//Client present in DB so update it
+            clientFoundByRequest.ifPresent(
+                    presentClient -> updateClientIfPresent(clientDto, presentClient, idTypeRequest, idNumberRequest)
+            );
         } else if (!isClientPresentByJsonData) {
-            clientRepository.save(client);//Client not present then create new client
-            updateImage(image, idTypeRequest, idNumberRequest);
+            clientRepository.save(clientMapper.toClient(clientDto));//Client json/request not present then create new client
+            updateImage(clientMapper.toImage(clientDto), idTypeRequest, idNumberRequest);
         } else if (isClientPresentByRequestParam) {
-            if ((idTypeInJson.equals(idTypeRequest)) &&
-                    (idNumberInJson.equals(idNumberRequest))) {
-                clientFoundByRequest.ifPresent(//Client present DB so update it
-                        presentClient -> {
-                            updateClient(presentClient, client);
-                            updateImage(image, idTypeRequest, idNumberRequest);
-                        });
+            if ((idTypeInJson + idNumberInJson).equals(idTypeRequest + idNumberRequest)) {//Client present in DB so update it
+                clientFoundByRequest.ifPresent(
+                        presentClient -> updateClientIfPresent(clientDto, presentClient, idTypeRequest, idNumberRequest)
+                );
             } else {
                 throw new ClientUpdateException(idTypeRequest, idNumberRequest,
-                        idTypeInJson, idNumberInJson);//Client already in DB with another data
+                        idTypeInJson, idNumberInJson);//Client present but update info already in DB
             }
         } else {
-            throw new ClientNotFoundException(idTypeRequest, idNumberRequest);//Client requested to update not present in DB
+            throw new ClientNotFoundException(idTypeRequest, idNumberRequest);//Client requested to update not present in DB (json present)
         }
     }
 
-    public void updateClient(Client presentClient, Client client) {
-        presentClient.setFirstName(client.getFirstName());
-        presentClient.setLastName(client.getLastName());
-        presentClient.setIdType(client.getIdType());
-        presentClient.setIdNumber(client.getIdNumber());
-        presentClient.setAge(client.getAge());
-        presentClient.setCityOfBirth(client.getCityOfBirth());
+    public void updateClientIfPresent(ClientImageDto updatedClient, Client clientFound,
+                                      String idType, Long idNumber) {
+        updateClient(clientFound, clientMapper.toClient(updatedClient));
+        updateImage(clientMapper.toImage(updatedClient), idType, idNumber);
+    }
+
+    public void updateClient(Client presentClient, Client clientInfo) {
+        presentClient.setFirstName(clientInfo.getFirstName());
+        presentClient.setLastName(clientInfo.getLastName());
+        presentClient.setIdType(clientInfo.getIdType());
+        presentClient.setIdNumber(clientInfo.getIdNumber());
+        presentClient.setAge(clientInfo.getAge());
+        presentClient.setCityOfBirth(clientInfo.getCityOfBirth());
         clientRepository.save(presentClient);
     }
 
@@ -161,13 +157,7 @@ public class ClientService {
                     presentImage.setIdType(image.getIdType());
                     presentImage.setIdNumber(image.getIdNumber());
                     imageRepository.save(presentImage);
-                }, () -> {
-                    Image newImage = new Image();
-                    newImage.setImageB64(image.getImageB64());
-                    newImage.setIdType(image.getIdType());
-                    newImage.setIdNumber(image.getIdNumber());
-                    imageRepository.save(newImage);
-                });
+                }, () -> imageRepository.save(image));
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
@@ -176,17 +166,13 @@ public class ClientService {
         clientRepository
                 .findFirstByIdTypeAndIdNumber(idType, idNumber)
                 .ifPresentOrElse(
-                        client ->
-                                clientRepository.deleteByClientId(client.getClientId())
-                        ,
+                        client -> clientRepository.deleteByClientId(client.getClientId()),
                         () -> {
                             throw new ClientNotFoundException(idType, idNumber);
                         });
         imageRepository
                 .findFirstByIdTypeAndIdNumber(idType, idNumber)
-                .ifPresent(
-                        image ->
-                                imageRepository.deleteById(image.getId())
+                .ifPresent(image -> imageRepository.deleteById(image.getId())
                 );
     }
 
