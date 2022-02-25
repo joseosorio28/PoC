@@ -1,6 +1,5 @@
 package com.pragma.pocapp.controller;
 
-
 import com.pragma.pocapp.dto.ClientImageDto;
 import com.pragma.pocapp.services.ClientService;
 import lombok.RequiredArgsConstructor;
