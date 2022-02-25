@@ -81,13 +81,9 @@ public class ClientService {
                         () ->
                                 clientRepository.save(newClient));
 
-        Image newClientImage = clientMapper.toImage(newClientDto);
-        imageRepository.save(
-                imageRepository
-                        .findFirstByIdTypeAndIdNumber(
-                                newClientImage.getIdType(),
-                                newClientImage.getIdNumber())
-                        .orElse(newClientImage));
+        updateImage(clientMapper.toImage(newClientDto),
+                newClient.getIdType(),
+                newClient.getIdNumber());
     }
 
     //Method for handle single PUT request by client IdType and IdNumber
@@ -113,17 +109,13 @@ public class ClientService {
         boolean isClientPresentByJsonData = clientFoundByJson.isPresent();
 
         if (!isClientPresentByJsonData && isClientPresentByRequestParam) {//Client present in DB so update it
-            clientFoundByRequest.ifPresent(
-                    presentClient -> updateClientIfPresent(clientDto, presentClient, idTypeRequest, idNumberRequest)
-            );
+            updateClientAndImage(clientDto, clientFoundByRequest.get(), idTypeRequest, idNumberRequest);
         } else if (!isClientPresentByJsonData) {
             clientRepository.save(clientMapper.toClient(clientDto));//Client json/request not present then create new client
             updateImage(clientMapper.toImage(clientDto), idTypeRequest, idNumberRequest);
         } else if (isClientPresentByRequestParam) {
             if ((idTypeInJson + idNumberInJson).equals(idTypeRequest + idNumberRequest)) {//Client present in DB so update it
-                clientFoundByRequest.ifPresent(
-                        presentClient -> updateClientIfPresent(clientDto, presentClient, idTypeRequest, idNumberRequest)
-                );
+                updateClientAndImage(clientDto, clientFoundByRequest.get(), idTypeRequest, idNumberRequest);
             } else {
                 throw new ClientUpdateException(idTypeRequest, idNumberRequest,
                         idTypeInJson, idNumberInJson);//Client present but update info already in DB
@@ -133,13 +125,13 @@ public class ClientService {
         }
     }
 
-    public void updateClientIfPresent(ClientImageDto updatedClient, Client clientFound,
-                                      String idType, Long idNumber) {
-        updateClient(clientFound, clientMapper.toClient(updatedClient));
+    public void updateClientAndImage(ClientImageDto updatedClient, Client clientFound,
+                                     String idType, Long idNumber) {
+        updateClient(clientMapper.toClient(updatedClient), clientFound);
         updateImage(clientMapper.toImage(updatedClient), idType, idNumber);
     }
 
-    public void updateClient(Client presentClient, Client clientInfo) {
+    public void updateClient(Client clientInfo, Client presentClient) {
         presentClient.setFirstName(clientInfo.getFirstName());
         presentClient.setLastName(clientInfo.getLastName());
         presentClient.setIdType(clientInfo.getIdType());

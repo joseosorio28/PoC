@@ -1,5 +1,7 @@
 package com.pragma.pocapp.advisor;
 
+import com.pragma.pocapp.advisor.CustomExceptionHandler;
+import com.pragma.pocapp.advisor.ErrorResponse;
 import com.pragma.pocapp.advisor.customexceptions.*;
 import com.pragma.pocapp.entity.Client;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class CustomExceptionHandlerTest {
 
-    CustomExceptionHandler customExceptionHandler;
+    private CustomExceptionHandler customExceptionHandler;
     private static Client client;
     private static final String FATAL_ERROR_CONTACT_ADMIN = "The application got a critical error, please contact the administrator.";
 
